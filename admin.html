@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; }
+        .container { max-width: 500px; background: white; padding: 30px; margin: 50px auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .token-section { background: #ffeeba; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; }
+        #status { font-weight: bold; margin-top: 15px; color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📸 Poster Admin Panel</h2>
+    
+    <div id="tokenSection" class="token-section">
+        <p style="color: #856404; font-size: 14px;">GitHub ടോക്കൺ ബ്രൗസറിൽ സേവ് ചെയ്തിട്ടില്ല. ദയവായി താഴെ നൽകുക:</p>
+        <input type="password" id="githubToken" placeholder="Paste your GitHub Personal Access Token here">
+        <button onclick="saveToken()">Save Token</button>
+    </div>
+
+    <div id="uploadSection">
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="uploadToGithub()">🚀 Upload Poster</button>
+        <button onclick="clearToken()" style="background-color: #dc3545; font-size: 12px; padding: 5px; margin-top: 20px;">Change/Delete Token</button>
+    </div>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    // നിങ്ങളുടെ വിവരങ്ങൾ ഇവിടെ സെറ്റ് ചെയ്തിട്ടുണ്ട് 👇
+    const GITHUB_USERNAME = "zain-zain22"; 
+    const REPO_NAME = "poster";             
+    const BRANCH = "main";                          
+
+    window.onload = function() {
+        if (!localStorage.getItem('gh_token')) {
+            document.getElementById('tokenSection').style.display = 'block';
+        }
+    }
+
+    function saveToken() {
+        const token = document.getElementById('githubToken').value.trim();
+        if (token) {
+            localStorage.setItem('gh_token', token);
+            document.getElementById('tokenSection').style.display = 'none';
+            alert('ടോക്കൺ ബ്രൗസറിൽ വിജയകരമായി സേവ് ചെയ്തു!');
+        } else {
+            alert('ദയവായി ടോക്കൺ നൽകുക');
+        }
+    }
+
+    function clearToken() {
+        if(confirm("സേവ് ചെയ്ത ടോക്കൺ ഡിലീറ്റ് ചെയ്യണോ?")) {
+            localStorage.removeItem('gh_token');
+            document.getElementById('tokenSection').style.display = 'block';
+            document.getElementById('githubToken').value = '';
+            alert('ടോക്കൺ ഡിലീറ്റ് ചെയ്തു.');
+        }
+    }
+
+    async function uploadToGithub() {
+        const token = localStorage.getItem('gh_token');
+        if (!token) {
+            alert('ആദ്യം ടോക്കൺ സേവ് ചെയ്യുക!');
+            document.getElementById('tokenSection').style.display = 'block';
+            return;
+        }
+
+        const fileInput = document.getElementById('imageInput');
+        if (fileInput.files.length === 0) {
+            alert('ദയവായി ഒരു ചിത്രം സെലക്ട് ചെയ്യുക.');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerText = "Uploading... ദയവായി കാത്തിരിക്കുക...";
+
+        const fileName = `poster_${Date.now()}.${file.name.split('.').pop()}`;
+        const path = `posters/${fileName}`; 
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async function () {
+            const base64Content = reader.result.split(',')[1];
+            const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${path}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Uploaded ${fileName} via Admin Panel`,
+                        content: base64Content,
+                        branch: BRANCH
+                    })
+                });
+
+                if (response.ok) {
+                    statusDiv.innerHTML = "<span style='color:green;'>🎉 പോസ്റ്റർ വിജയകരമായി അപ്‌ലോഡ് ചെയ്തു!</span>";
+                    fileInput.value = ''; 
+                } else {
+                    const errData = await response.json();
+                    statusDiv.innerHTML = `<span style='color:red;'>Error: ${errData.message}</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span style='color:red;'>Error: ${error.message}</span>`;
+            }
+        };
+    }
+</script>
+
+</body>
+</html>
