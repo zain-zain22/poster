@@ -6,16 +6,87 @@
     <title>Projector Display</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: Arial, sans-serif; }
-        .slider { width: 100%; height: 100%; position: relative; }
-        .poster { width: 100%; height: 100%; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s ease-in-out; display: flex; justify-content: center; align-items: center; }
-        .poster.active { opacity: 1; }
-        .poster img { width: 100%; height: 100%; object-fit: contain; }
-        .controls { position: absolute; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 100; }
-        .btn { background-color: rgba(255, 255, 255, 0.2); color: white; border: 2px solid rgba(255, 255, 255, 0.7); padding: 15px 25px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; backdrop-filter: blur(5px); }
-        .btn:hover { background-color: rgba(255, 255, 255, 0.8); color: black; }
-        .fullscreen-btn { background-color: rgba(0, 150, 136, 0.4); border-color: rgb(0, 150, 136); }
-        .fullscreen-btn:hover { background-color: rgb(0, 150, 136); color: white; }
+        
+        /* പ്രധാന പേജ് ഒരു ഫ്ലെക്സ് ബോക്സ് ആക്കുന്നു */
+        body, html { 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #000; 
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column; /* പോസ്റ്റർ മുകളിലും ബട്ടൺ താഴെയും വരാൻ */
+        }
+
+        /* പോസ്റ്റർ നിൽക്കുന്ന ഭാഗം - ബട്ടൺ ബാർ കഴിഞ്ഞ് ബാക്കി മുഴുവൻ സ്ഥലം എടുക്കും */
+        .slider { 
+            flex: 1;
+            width: 100%; 
+            position: relative;
+            background-color: #000;
+        }
+
+        .poster { 
+            width: 100%; 
+            height: 100%; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            opacity: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        /* ബട്ടൺ അമർത്തുമ്പോൾ ഫേഡിംഗ് ഇല്ലാതെ പെട്ടെന്ന് മാറാൻ transition ഒഴിവാക്കി */
+        .poster.active { 
+            opacity: 1; 
+        }
+
+        .poster img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+        }
+
+        /* ബട്ടണുകൾക്കായി താഴെ പ്രത്യേകം ഉണ്ടാക്കിയ ബാർ */
+        .controls-bar { 
+            width: 100%;
+            background-color: #111; /* ബട്ടണുകൾക്ക് പിന്നിൽ ഒരു ഡാർക്ക് ബാക്ക്ഗ്രൗണ്ട് */
+            padding: 15px; 
+            display: flex; 
+            justify-content: center; /* ബട്ടണുകൾ നടുവിലേക്ക് കൊണ്ടുവരാൻ */
+            gap: 20px; 
+            border-top: 1px solid #222;
+        }
+
+        .btn { 
+            background-color: #333; 
+            color: white; 
+            border: 2px solid #555; 
+            padding: 15px 35px; /* ബട്ടൺ ഞെക്കാൻ എളുപ്പത്തിന് വീതി കൂട്ടി */
+            font-size: 20px; /* അക്ഷരങ്ങൾ കുറച്ചുകൂടി വലുതാക്കി */
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 8px; 
+        }
+
+        .btn:hover { 
+            background-color: white; 
+            color: black; 
+            border-color: white;
+        }
+
+        .fullscreen-btn { 
+            background-color: #009688; 
+            border-color: #00bfa5; 
+        }
+
+        .fullscreen-btn:hover { 
+            background-color: #00bfa5; 
+            color: white; 
+        }
+
         #msg { color: white; text-align: center; margin-top: 20%; font-size: 24px; }
     </style>
 </head>
@@ -24,9 +95,9 @@
     <div id="msg">പോസ്റ്ററുകൾ ലോഡ് ചെയ്യുന്നു...</div>
     <div class="slider" id="slider" style="display:none;"></div>
 
-    <div class="controls">
-        <button class="btn fullscreen-btn" onclick="toggleFullScreen()">🖥️ Full Screen</button>
+    <div class="controls-bar">
         <button class="btn" onclick="prevPoster()">◀ Previous</button>
+        <button class="btn fullscreen-btn" onclick="toggleFullScreen()">🖥️ Full Screen</button>
         <button class="btn" onclick="nextPoster()">Next ▶</button>
     </div>
 
