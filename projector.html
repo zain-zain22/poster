@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projector Display</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: Arial, sans-serif; }
+        .slider { width: 100%; height: 100%; position: relative; }
+        .poster { width: 100%; height: 100%; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s ease-in-out; display: flex; justify-content: center; align-items: center; }
+        .poster.active { opacity: 1; }
+        .poster img { width: 100%; height: 100%; object-fit: contain; }
+        .controls { position: absolute; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 100; }
+        .btn { background-color: rgba(255, 255, 255, 0.2); color: white; border: 2px solid rgba(255, 255, 255, 0.7); padding: 15px 25px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; backdrop-filter: blur(5px); }
+        .btn:hover { background-color: rgba(255, 255, 255, 0.8); color: black; }
+        .fullscreen-btn { background-color: rgba(0, 150, 136, 0.4); border-color: rgb(0, 150, 136); }
+        .fullscreen-btn:hover { background-color: rgb(0, 150, 136); color: white; }
+        #msg { color: white; text-align: center; margin-top: 20%; font-size: 24px; }
+    </style>
+</head>
+<body>
+
+    <div id="msg">പോസ്റ്ററുകൾ ലോഡ് ചെയ്യുന്നു...</div>
+    <div class="slider" id="slider" style="display:none;"></div>
+
+    <div class="controls">
+        <button class="btn fullscreen-btn" onclick="toggleFullScreen()">🖥️ Full Screen</button>
+        <button class="btn" onclick="prevPoster()">◀ Previous</button>
+        <button class="btn" onclick="nextPoster()">Next ▶</button>
+    </div>
+
+    <script>
+        const GITHUB_USERNAME = "zain-zain22";
+        const REPO_NAME = "poster";
+        const BRANCH = "main";
+
+        let currentIndex = 0;
+        let posterElements = [];
+
+        async function fetchPosters() {
+            const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/posters?ref=${BRANCH}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("No posters found or folder missing");
+                const files = await response.json();
+                
+                const images = files.filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+                
+                if(images.length === 0) {
+                    document.getElementById('msg').innerText = "ഫോൾഡറിൽ ചിത്രങ്ങൾ ഒന്നും തന്നെയില്ല!";
+                    return;
+                }
+
+                const slider = document.getElementById('slider');
+                document.getElementById('msg').style.display = 'none';
+                slider.style.display = 'block';
+
+                images.forEach((img, index) => {
+                    const div = document.createElement('div');
+                    div.className = `poster ${index === 0 ? 'active' : ''}`;
+                    
+                    const imgTag = document.createElement('img');
+                    imgTag.src = `https://${GITHUB_USERNAME}.github.io/${REPO_NAME}/posters/${img.name}`;
+                    imgTag.alt = `Poster ${index + 1}`;
+                    
+                    div.appendChild(imgTag);
+                    slider.appendChild(div);
+                });
+
+                posterElements = document.querySelectorAll('.poster');
+
+            } catch (error) {
+                document.getElementById('msg').innerText = "Error loading posters: " + error.message;
+            }
+        }
+
+        function nextPoster() {
+            if(posterElements.length <= 1) return;
+            posterElements[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % posterElements.length;
+            posterElements[currentIndex].classList.add('active');
+        }
+
+        function prevPoster() {
+            if(posterElements.length <= 1) return;
+            posterElements[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex - 1 + posterElements.length) % posterElements.length;
+            posterElements[currentIndex].classList.add('active');
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        fetchPosters();
+    </script>
+
+</body>
+</html>
